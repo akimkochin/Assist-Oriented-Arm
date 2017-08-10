@@ -12,6 +12,7 @@
 #define onedeg_X 1.32
 #define deg 30
 
+int flag = 0;
 
 int acc_X = 0;
 int acc_Y = 0;
@@ -74,50 +75,48 @@ void checker(){
 void loop() {
   unsigned char sendvalue1;
   unsigned char sendvalue2;
-  // put your main code here, to run repeatedly:
-  /*
-  //Serial2.print('d');
-  SerialUSB.print("x =");
-  SerialUSB.print(acc_X);
-  SerialUSB.print("degX =");
-  SerialUSB.print(degree_X);
-  SerialUSB.print("y =");
-  SerialUSB.print(acc_Y);
-  SerialUSB.print("degY =");
-  SerialUSB.print(degree_Y);
-  SerialUSB.print("z =");
-  SerialUSB.println(acc_Z);
-  SerialUSB.print("checker = ");
-  SerialUSB.print(onetime_X);
-  SerialUSB.print("checker = ");
-  SerialUSB.print(onetime_Y);
-  */
-    //後ろ
-  if((onetime_Y + 30) < degree_Y){
-    Serial2.print('a');
-    SerialUSB.println("aaa");
-  }
-  //前
-  if((onetime_Y - 30) > degree_Y){
-    Serial2.print('u');
-    SerialUSB.println("uuu");
-  }
 
-  if((onetime_X - 30) > degree_X){
-    Serial2.print('r');
-    SerialUSB.println("rrr");
-  }
-  if((onetime_X + 30) < degree_X){
-    Serial2.print('l');
-    SerialUSB.println("lll");
-  }
+  //アクティブ側からの連絡を受け取る
   if(Serial2.available()){
-    while(1){
-      sendvalue1 = Serial2.read();
-      SerialUSB.print(sendvalue1);
-      if(sendvalue1 == 'o'){
-        break;
-      }
+    sendvalue1 = Serial2.read();
+    SerialUSB.print(sendvalue1);
+    if(sendvalue1 == 'f'){
+      flag = 0;
     }
+  }
+  if(flag == 0){
+
+    //後ろ
+    if((onetime_Y + 30) < degree_Y){
+//      Serial2.print("angleup"+'\0');
+      Serial2.print("up");
+      Serial2.print('\0');
+
+      SerialUSB.println("aaa");
+    }
+    //前
+    if((onetime_Y - 30) > degree_Y){
+      //Serial2.print("angledown"+'\0');
+      Serial2.print("dw");
+      Serial2.print('\0');
+
+      SerialUSB.println("uuu");
+    }
+
+    if((onetime_X - 30) > degree_X){
+      //Serial2.print("angleright"+'\0');
+      Serial2.print("ri");
+      Serial2.print('\0');
+
+      SerialUSB.println("rrr");
+    }
+    if((onetime_X + 30) < degree_X){
+      //Serial2.print("angleleft"+'\0');
+      Serial2.print("le");
+      Serial2.print('\0');
+
+      SerialUSB.println("lll");
+    }
+    flag = 1;
   }
 }
