@@ -1,5 +1,5 @@
 
-#include <math.h>
+#include <string.h>
 #define DXL_BUS_SERIAL1 1
 #define DXL_BUS_SERIAL3 3
 
@@ -32,7 +32,15 @@ double z = 0.0;
 double beforephi = 0.0;
 double beforeangle = 0.0;
 
-unsigned char sendvalue;
+//char sendvalue[256] = "";
+ char sendvalue[256] = "";
+ char sendvalue1[4] = "";
+ char* sendvalue2 = 0;
+ //char s1 = sendvalue1;
+ //char s2 = sendvalue2;
+
+char data=0;
+int counter = 0;
 
 double alpha = 0.0;
 
@@ -91,13 +99,13 @@ void kinematic(){
 void inputDegree(){
   double rad1;
   double rad2;
-  delay(1000);
-  Dxl.setPosition(ID_NUM3,512,100);
+  delay(10);
+  Dxl.writeWord(ID_NUM3,512,100);
   int presentPos1 = 512;//(Dxl.readByte(ID_NUM3, 37) << 8 )  + Dxl.readByte(ID_NUM3, 36);
   //q1 = D2R*(Deg*(presentPos1-512));
 
 
-  Dxl.setPosition(ID_NUM4,512,100);
+  Dxl.writeWord(ID_NUM4,512,100);
   int presentPos2 = 512;//(Dxl.readByte(ID_NUM3, 37) << 8 )  + Dxl.readByte(ID_NUM3, 36);
   //q2 = D2R*(Deg*(presentPos2-512));
 
@@ -109,15 +117,15 @@ void inverKinema(){
   q1 = atan2(z, y);
   q2 = atan2(y, x - l1);
 
-  SerialUSB.print(q1);
-  SerialUSB.print(",");
-  SerialUSB.println(q2);
+  //SerialUSB.print(q1);
+  //SerialUSB.print(",");
+  //SerialUSB.println(q2);
   //姿勢制御(t-1時のtheta1とt時のtheta1を比較し、差が180だった場合t-1時のtheta角を用いる)
   double res = abs(theta_t_1 - q1);
-  SerialUSB.println(res);
+  //SerialUSB.println(res);
 
   if(res >= 3.14){
-    SerialUSB.print("姿勢制御");
+    //SerialUSB.print("姿勢制御");
     q1 = theta_t_1;
   }
 }
@@ -143,31 +151,32 @@ void convCoordinate(){
   if(abs(q2) >= tmp){
   return;
 }*/
-  beforephi = phi1;
-  beforeangle = angle;
+beforephi = phi1;
+beforeangle = angle;
 
+x = l1 + (l2 * cos(phi1) * cos(angle));
+y = l2 * sin(phi1);
+z = l2 * cos(phi1) * sin(angle);
+inverKinema();
+
+double radq2pl = 90 * D2R;
+double radq2mi = -90 * D2R;
+if(q2 > radq2pl || q2 < radq2mi){
   x = l1 + (l2 * cos(phi1) * cos(angle));
   y = l2 * sin(phi1);
   z = l2 * cos(phi1) * sin(angle);
-  inverKinema();
-
-  double radq2pl = 90 * D2R;
-  double radq2mi = -90 * D2R;
-  if(q2 > radq2pl || q2 < radq2mi){
-    x = l1 + (l2 * cos(phi1) * cos(angle));
-    y = l2 * sin(phi1);
-    z = l2 * cos(phi1) * sin(angle);
-  }else{
-    flag = 0;
-  }
+}else{
+  flag = 0;
+}
 
 }
 
 
 
 void loop() {
-
+/*
   if(Serial2.available()){
+    //同じ値が100回送られて初めて1回の実行となる
     for(;count <= 100; count++){
       sendvalue = Serial2.read();
       //SerialUSB.print("count = ");
@@ -177,15 +186,47 @@ void loop() {
       if(sendvalue != Serial2.read()){
         count = 0;
       }
+      Serial2.print('f');
     }
     if(sendvalue != Serial2.read()){
       count = 0;
+    }*/
+
+    SerialUSB.print(x);
+    SerialUSB.print(",");
+    SerialUSB.print(y);
+    SerialUSB.print(",");
+    SerialUSB.println(z);
+
+
+    if(Serial2.available()){
+      /*sendvalue1[0] = Serial2.read();
+      *sendvalue2 = Serial2.read();
+      SerialUSB.print("sendvalue1 = ");
+      SerialUSB.print(sendvalue1[0]);
+      SerialUSB.print(",");
+      SerialUSB.println(*sendvalue2);
+      strcat(sendvalue, strcat(sendvalue1, sendvalue2));
+      //strcpy(sendvalue, sendvalue1);
+*/
+      //strcpy(sendvalue, Byte(Serial2.read()));
+      data = Serial2.read();
+      sendvalue[counter] = data;
+      SerialUSB.println(sendvalue);
+      if(data == '\0'){
+        counter = 0;
+        memset(sendvalue, '\0', 256);
+      }
+      else{
+        counter++;
+      }
     }
 
 
-    if(sendvalue == 'a' && count >= 100){
-      //SerialUSB.print("d in");
+    if(strcmp(sendvalue, "up")){
+    //if(sendvalue == '1156'){
 
+      //SerialUSB.print("d in");
       phi1 = phi1 + Add_anglev * D2R;
       if(phi1 >= 2.617){
         phi1 = 2.617;
@@ -193,7 +234,9 @@ void loop() {
       convCoordinate();
     }
 
-    if(sendvalue == 'u' && count >= 100){
+    if(strcmp(sendvalue, "dw")){
+    //if(sendvalue == '2245'){
+
       //SerialUSB.print("u in");
       phi1 = phi1 - Add_anglev*D2R;
       if(phi1 <= -2.617){
@@ -202,7 +245,9 @@ void loop() {
       convCoordinate();
     }
 
-    if(sendvalue == 'r' && count >= 100){
+    if(strcmp(sendvalue, "ri")){
+    //if(sendvalue == '3334'){
+
       //SerialUSB.print("r in");
       angle = angle + Add_angleh*D2R;
       if(angle >= 2.617){
@@ -211,7 +256,9 @@ void loop() {
       convCoordinate();
     }
 
-    if(sendvalue == 'l' && count >= 100){
+    if(strcmp(sendvalue, "le")){
+    //if(sendvalue == '4423'){
+
       //SerialUSB.print("l in");
       angle = angle - Add_angleh*D2R;
       if(angle <= -2.617){
@@ -220,17 +267,20 @@ void loop() {
       convCoordinate();
     }
 
+
+    inverKinema();
+    Dxl.setPosition(ID_NUM3,deg2pos(q1),100);
+    Dxl.setPosition(ID_NUM4,deg2pos(q2),100);
+    delay(100);
+    if(Dxl.readByte(ID_NUM3, 46) != 1 ||  Dxl.readByte(ID_NUM3, 46) != 1){
+      Serial2.print('f');
+    }
+
+    //Serial2.print('o');
+    //Serial2.print('k');
+
+    //Dynamixelへの命令の衝突を防ぐ
+    //while(Dxl.readByte(ID_NUM3, 46) != 0 ||  Dxl.readByte(ID_NUM3, 46) !=0){
+    //delay(10);
+    //}
   }
-  inverKinema();
-  Dxl.setPosition(ID_NUM3,deg2pos(q1),800);
-  Dxl.setPosition(ID_NUM4,deg2pos(q2),800);
-  //Serial2.print('o');
-  //Serial2.print('k');
-
-  //Dynamixelへの命令の衝突を防ぐ
-  while(Dxl.readByte(ID_NUM3, 46) != 0 ||  Dxl.readByte(ID_NUM3, 46) !=0){
-  delay(10);
-}
-
-
-}
