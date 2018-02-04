@@ -114,7 +114,7 @@ void inputDegree(){
 void inverKinema(){
   theta_t_1 = q1;
 
-  q1 = atan2(z, y);
+  q1 = atan2(y, z);
   q2 = atan2(y, x - l1);
 
   //SerialUSB.print(q1);
