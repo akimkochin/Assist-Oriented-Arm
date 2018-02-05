@@ -50,7 +50,7 @@ void inputDegree();
 void inverKinema();
 int deg2pos(double ra);
 void convCoordinate();
-
+void moving();
 
 void setup() {
 
@@ -114,9 +114,16 @@ void inputDegree(){
 void inverKinema(){
   theta_t_1 = q1;
 
+if(z == 0){
+  q1 = 0.0;
+}else{
   q1 = atan2(y, z);
-  q2 = atan2(y, x - l1);
+}
 
+  q2 = atan2(y, x - l1);
+if(z < 0 && y < 0){
+  q1 = q1 + pi;
+}
   //SerialUSB.print(q1);
   //SerialUSB.print(",");
   //SerialUSB.println(q2);
@@ -151,7 +158,7 @@ void convCoordinate(){
   if(abs(q2) >= tmp){
   return;
 }*/
-
+//SerialUSB.println("Coordinate");
 double radq2pl = 70 * D2R;
 double radq2mi = -70 * D2R;
 //x = l1 + (l2 * cos(phi1) * cos(angle));
@@ -164,10 +171,11 @@ if(angle >= radq2pl || angle <= radq2mi){
   angle = beforeangle;
 }
 
-x = l1 + (l2 * cos(phi1));
+x = l1 + (l2 * cos(phi1) * cos(angle));
 y = l2 * sin(phi1);
-z = l2 * sin(angle);
+z = l2 * cos(phi1) * sin(angle);
 inverKinema();
+moving();
 
 beforephi = phi1;
 beforeangle = angle;
@@ -183,6 +191,10 @@ beforeangle = angle;
 */
 }
 
+void moving(){
+  Dxl.setPosition(ID_NUM3,deg2pos(q1),100);
+  Dxl.setPosition(ID_NUM4,deg2pos(q2),100);
+}
 
 
 void loop() {
@@ -224,7 +236,7 @@ void loop() {
       //strcpy(sendvalue, Byte(Serial2.read()));
       data = Serial2.read();
       sendvalue[counter] = data;
-      SerialUSB.println(sendvalue);
+      //SerialUSB.println(sendvalue);
       if(data == '\0'){
         counter = 0;
         memset(sendvalue, '\0', 256);
@@ -234,11 +246,16 @@ void loop() {
       }
     }
 
+    int up = strncmp(sendvalue, "up", 2);
+    int dw = strncmp(sendvalue, "dw", 2);
+    int ri = strncmp(sendvalue, "ri", 2);
+    int le = strncmp(sendvalue, "le", 2);
 
-    if(strcmp(sendvalue, "up")){
+
+    if(up == 0){
     //if(sendvalue == '1156'){
 
-      //SerialUSB.print("d in");
+      //SerialUSB.println("d in");
       phi1 = phi1 + Add_anglev;
       //if(phi1 >= 2.617){
         //phi1 = 2.617;
@@ -246,33 +263,33 @@ void loop() {
       convCoordinate();
     }
 
-    if(strcmp(sendvalue, "dw")){
+    if(dw == 0){
     //if(sendvalue == '2245'){
 
-      //SerialUSB.print("u in");
-      phi1 = phi1 + Add_anglev*D2R;
+      //SerialUSB.println("u in");
+      phi1 = phi1 - Add_anglev;
       //if(phi1 <= -2.617){
         //phi1 = -2.617;
       //}
       convCoordinate();
     }
 
-    if(strcmp(sendvalue, "ri")){
+    if(ri == 0){
     //if(sendvalue == '3334'){
 
-      //SerialUSB.print("r in");
-      angle = angle + Add_angleh*D2R;
+      //SerialUSB.println("r in");
+      angle = angle + Add_angleh;
       //if(angle >= 2.617){
         //angle = 2.617;
       //}
       convCoordinate();
     }
 
-    if(strcmp(sendvalue, "le")){
+    if(le == 0){
     //if(sendvalue == '4423'){
 
-      //SerialUSB.print("l in");
-      angle = angle + Add_angleh*D2R;
+      //SerialUSB.println("l in");
+      angle = angle - Add_angleh;
       //if(angle <= -2.617){
         //angle = -2.617;
       //}
@@ -280,12 +297,17 @@ void loop() {
     }
 
 
-    inverKinema();
-    Dxl.setPosition(ID_NUM3,deg2pos(q1),100);
-    Dxl.setPosition(ID_NUM4,deg2pos(q2),100);
-    delay(100);
-    if(Dxl.readByte(ID_NUM3, 46) != 1 ||  Dxl.readByte(ID_NUM3, 46) != 1){
+    //inverKinema();
+
+    //delay(100);
+    int dx3 = Dxl.readByte(ID_NUM3, 46);
+    int dx4 = Dxl.readByte(ID_NUM4, 46);
+
+    if(dx3 != 1 && dx4 != 1){
       Serial2.print('f');
+
+      SerialUSB.println("sendF");
+
     }
 
     //Serial2.print('o');
