@@ -50,7 +50,7 @@ void inputDegree();
 void inverKinema();
 int deg2pos(double ra);
 void convCoordinate();
-void moving();
+//void moving();
 
 void setup() {
 
@@ -175,7 +175,10 @@ x = l1 + (l2 * cos(phi1) * cos(angle));
 y = l2 * sin(phi1);
 z = l2 * cos(phi1) * sin(angle);
 inverKinema();
-moving();
+//moving();
+Dxl.setPosition(ID_NUM3,deg2pos(q1),100);
+Dxl.setPosition(ID_NUM4,deg2pos(q2),100);
+
 
 beforephi = phi1;
 beforeangle = angle;
@@ -191,11 +194,12 @@ beforeangle = angle;
 */
 }
 
+/*
 void moving(){
   Dxl.setPosition(ID_NUM3,deg2pos(q1),100);
   Dxl.setPosition(ID_NUM4,deg2pos(q2),100);
 }
-
+*/
 
 void loop() {
 /*
