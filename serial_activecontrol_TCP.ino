@@ -10,8 +10,8 @@
 #define R2D 180/pi
 #define Deg 0.29296875 //dynamixelの角度1はdegreeでは0.29296875
 #define Max_rad 5.2358333
-#define Add_anglev 4
-#define Add_angleh 4
+#define Add_anglev 4*D2R
+#define Add_angleh 4*D2R
 
 Dynamixel Dxl(DXL_BUS_SERIAL3);
 
@@ -87,7 +87,7 @@ void kinematic(){
   temp1 = (x-l1) / l2;
   phi1 = acos(temp1);
 
-  temp2 = z / (x - l1);
+  temp2 = z / l2;
   angle = asin(temp2);
 
   if(temp2 > 1.0 && temp2 < -1.0){
@@ -124,10 +124,10 @@ void inverKinema(){
   double res = abs(theta_t_1 - q1);
   //SerialUSB.println(res);
 
-  if(res >= 3.14){
+//  if(res >= 3.14){
     //SerialUSB.print("姿勢制御");
-    q1 = theta_t_1;
-  }
+//    q1 = theta_t_1;
+//  }
 }
 
 int deg2pos(double ra){
@@ -151,24 +151,36 @@ void convCoordinate(){
   if(abs(q2) >= tmp){
   return;
 }*/
+
+double radq2pl = 70 * D2R;
+double radq2mi = -70 * D2R;
+//x = l1 + (l2 * cos(phi1) * cos(angle));
+//y = l2 * sin(phi1);
+//*z = l2 * cos(phi1) * sin(angle);
+if(phi1 >= radq2pl || phi1 <= radq2mi){
+  phi1 = beforephi;
+}
+if(angle >= radq2pl || angle <= radq2mi){
+  angle = beforeangle;
+}
+
+x = l1 + (l2 * cos(phi1));
+y = l2 * sin(phi1);
+z = l2 * sin(angle);
+inverKinema();
+
 beforephi = phi1;
 beforeangle = angle;
 
-x = l1 + (l2 * cos(phi1) * cos(angle));
-y = l2 * sin(phi1);
-z = l2 * cos(phi1) * sin(angle);
-inverKinema();
 
-double radq2pl = 90 * D2R;
-double radq2mi = -90 * D2R;
-if(q2 > radq2pl || q2 < radq2mi){
+/*if(q2 > radq2pl || q2 < radq2mi){
   x = l1 + (l2 * cos(phi1) * cos(angle));
   y = l2 * sin(phi1);
   z = l2 * cos(phi1) * sin(angle);
 }else{
   flag = 0;
 }
-
+*/
 }
 
 
@@ -227,10 +239,10 @@ void loop() {
     //if(sendvalue == '1156'){
 
       //SerialUSB.print("d in");
-      phi1 = phi1 + Add_anglev * D2R;
-      if(phi1 >= 2.617){
-        phi1 = 2.617;
-      }
+      phi1 = phi1 + Add_anglev;
+      //if(phi1 >= 2.617){
+        //phi1 = 2.617;
+      //}
       convCoordinate();
     }
 
@@ -238,10 +250,10 @@ void loop() {
     //if(sendvalue == '2245'){
 
       //SerialUSB.print("u in");
-      phi1 = phi1 - Add_anglev*D2R;
-      if(phi1 <= -2.617){
-        phi1 = -2.617;
-      }
+      phi1 = phi1 + Add_anglev*D2R;
+      //if(phi1 <= -2.617){
+        //phi1 = -2.617;
+      //}
       convCoordinate();
     }
 
@@ -250,9 +262,9 @@ void loop() {
 
       //SerialUSB.print("r in");
       angle = angle + Add_angleh*D2R;
-      if(angle >= 2.617){
-        angle = 2.617;
-      }
+      //if(angle >= 2.617){
+        //angle = 2.617;
+      //}
       convCoordinate();
     }
 
@@ -260,10 +272,10 @@ void loop() {
     //if(sendvalue == '4423'){
 
       //SerialUSB.print("l in");
-      angle = angle - Add_angleh*D2R;
-      if(angle <= -2.617){
-        angle = -2.617;
-      }
+      angle = angle + Add_angleh*D2R;
+      //if(angle <= -2.617){
+        //angle = -2.617;
+      //}
       convCoordinate();
     }
 
