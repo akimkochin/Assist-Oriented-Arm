@@ -35,6 +35,10 @@ float abs_x = 0.0;
 float abs_y = 0.0;
 float abs_z = 0.0;
 
+float abs_theta1 = 0.0;
+float abs_theta2 = 0.0;
+float tempL = 0.0;
+
 
 
 
@@ -72,8 +76,14 @@ void setup() {
 	pinMode(5, INPUT_PULLDOWN);
 	pinMode(6, INPUT_PULLDOWN);
 	pinMode(7, INPUT_PULLDOWN);
+
 	Dxl.writeDword(ID_NUM3, 116, 2048);
 	Dxl.writeDword(ID_NUM4, 116, 814);
+	Dxl.writeDword(ID_NUM1, 116, 2048);
+	Dxl.writeDword(ID_NUM2, 116, 2048);
+	
+
+
 	
 
 }
@@ -99,8 +109,11 @@ void loop() {
 	
 	T_coordinate();
 	Inv_Kinemtaics();
+	Dxl.writeDword(ID_NUM1, 112, 200);
+	Dxl.writeDword(ID_NUM2, 112, 200);
 	MoveDynamixel();
 	Change_rad2Dynamixel_pos();
+	
 	Dxl.writeDword(ID_NUM1, 116, dx1_pos);
 	Dxl.writeDword(ID_NUM2, 116, dx2_pos);
 
@@ -134,31 +147,15 @@ void MoveDynamixel(){
 	
 	if(act_up_flag == ON){
 		angle += Add_angle;
-		/*SerialUSB.print("theta1 = ");
-		SerialUSB.print(angle);
-		SerialUSB.print(", theta2 = ");
-		SerialUSB.println(theta2);*/
 	}
 	if(act_down_flag == ON){
 		angle -= Add_angle;
-		/*SerialUSB.print("theta1 = ");
-		SerialUSB.print(angle);
-		SerialUSB.print(", theta2 = ");
-		SerialUSB.println(theta2);*/
 	}
 	if(act_right_flag == ON){
 		phy -= Add_angle;
-		/*SerialUSB.print("theta1 = ");
-		SerialUSB.print(angle);
-		SerialUSB.print(", theta2 = ");
-		SerialUSB.println(theta2);*/
 	}
 	if(act_left_flag == ON){
 		phy += Add_angle;
-		/*SerialUSB.print("theta1 = ");
-		SerialUSB.print(angle);
-		SerialUSB.print(", theta2 = ");
-		SerialUSB.println(theta2);*/
 	}
 	
 }
@@ -244,11 +241,56 @@ void Kinematics(){
 
 void Inv_Kinemtaics(){
 	
-	if(coordinate_x == 0.0 && coordinate_z == 0.0){
+	/************theta1**************/
+	theta1 = atan2(coordinate_z, coordinate_x);
+	
+	if(coordinate_x == 0.0 && coordinate_z == 0.0){   //if x,z is 0, assigned 0 for theta1.
 		theta1 = 0.0;
 	}
-	theta1 = atan2(coordinate_z, coordinate_x);
-	theta2 = PI / 2 - atan2(coordinate_y - l1, coordinate_x);
+	/*
+	if(coordinate_z == 0.0){  //if x is 0, assigned 2 / pi for theta1.
+		theta1 = PI / 2;
+	}
+	
+	if(coordinate_x == 0.0){  //if z is 0, assigned 0 for theta1.
+		theta1 = 0.0;
+	}
+	*/
+	
+	
+	abs_theta1 = abs(theta1);
+	if(theta1 >= 3.0){
+		theta1 = 0.0;
+	}
+	
+	if(theta1 < 0){
+		abs_theta1 = abs(theta1);
+		theta1 = abs_theta1;
+	}
+	
+	
+	/**********theta2*************/
+	if(coordinate_x == 0.0){
+		theta2 = atan2(coordinate_z, coordinate_y - l1);
+	}else if(coordinate_z == 0.0){
+		theta2 = atan2(coordinate_x, coordinate_y - l1);
+	}else{
+		tempL = sqrt(coordinate_x * coordinate_x + coordinate_z * coordinate_z);
+		theta2 = atan2(tempL, coordinate_y - l1);
+		if(coordinate_x < 0 && coordinate_z < 0){
+			 
+		}else{
+			theta2 *= -1; 
+		}
+	}
+	
+	abs_theta2 = abs(theta2);
+	if(abs_theta2 >= 1.57){
+		if(theta2 > 0)
+			theta2 = 1.57;
+		if(theta2 < 0)
+			theta2 = -1.57;
+	}
 	
 }
 
