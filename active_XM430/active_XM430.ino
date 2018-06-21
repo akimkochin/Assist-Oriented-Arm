@@ -7,7 +7,7 @@ float coordinate_z = 0.0;
 /*length of links*/
 float l1 = 40.0;
 float l2 = 270.0;
-/*angle of joints in active*/
+/*angle of active joints*/
 float theta1 = 0.0;
 float theta2 = 0.0;
 
@@ -93,13 +93,13 @@ void loop() {
   // put your main code here, to run repeatedly: 
 	
 	//Kinematics();
-	/*
+	
 	SerialUSB.print(coordinate_x);
 	SerialUSB.print(",");
 	SerialUSB.print(coordinate_y);
 	SerialUSB.print(",");
-	SerialUSB.println(coordinate_z);
-	*/
+	SerialUSB.print(coordinate_z);
+	
 	
 	
 	SerialUSB.print("theta1 = ");
@@ -247,27 +247,20 @@ void Inv_Kinemtaics(){
 	if(coordinate_x == 0.0 && coordinate_z == 0.0){   //if x,z is 0, assigned 0 for theta1.
 		theta1 = 0.0;
 	}
-	/*
-	if(coordinate_z == 0.0){  //if x is 0, assigned 2 / pi for theta1.
-		theta1 = PI / 2;
+	
+	if(coordinate_x > 0){  // dividing cases for theta1
+		if(coordinate_z > 0)
+			theta1 = PI - theta1;
+		if(coordinate_z < 0)
+			theta1 = -1 * PI - theta1;
 	}
-	
-	if(coordinate_x == 0.0){  //if z is 0, assigned 0 for theta1.
-		theta1 = 0.0;
-	}
-	*/
-	
-	
+			
 	abs_theta1 = abs(theta1);
-	if(theta1 >= 3.0){
-		theta1 = 0.0;
-	}
-	
-	if(theta1 < 0){
-		abs_theta1 = abs(theta1);
-		theta1 = abs_theta1;
-	}
-	
+	theta1 = abs_theta1;// will be only positive value
+	/*
+	if(coordinate_z == 0.0 && coordinate_x != 0.0){
+		theta1 = PI / 2;
+	}*/
 	
 	/**********theta2*************/
 	if(coordinate_x == 0.0){
