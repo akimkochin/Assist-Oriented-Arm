@@ -38,7 +38,7 @@ float abs_z = 0.0;
 float abs_theta1 = 0.0;
 float abs_theta2 = 0.0;
 float tempL = 0.0;
-
+float tempY_l1 = 0.0;
 
 
 
@@ -95,17 +95,21 @@ void loop() {
 	//Kinematics();
 	
 	SerialUSB.print(coordinate_x);
-	SerialUSB.print(",");
+	SerialUSB.print(", ");
 	SerialUSB.print(coordinate_y);
-	SerialUSB.print(",");
+	SerialUSB.print(", ");
 	SerialUSB.print(coordinate_z);
 	
 	
 	
-	SerialUSB.print("theta1 = ");
+	SerialUSB.print(", theta1 = ");
 	SerialUSB.print(theta1);
 	SerialUSB.print(", theta2 = ");
-	SerialUSB.println(theta2);
+	SerialUSB.print(theta2);
+	SerialUSB.print("angle = ");
+	SerialUSB.print(angle);
+	SerialUSB.print(", phy = ");
+	SerialUSB.println(phy);
 	
 	T_coordinate();
 	Inv_Kinemtaics();
@@ -247,20 +251,22 @@ void Inv_Kinemtaics(){
 	if(coordinate_x == 0.0 && coordinate_z == 0.0){   //if x,z is 0, assigned 0 for theta1.
 		theta1 = 0.0;
 	}
-	
+	/*
 	if(coordinate_x > 0){  // dividing cases for theta1
 		if(coordinate_z > 0)
 			theta1 = PI - theta1;
 		if(coordinate_z < 0)
 			theta1 = -1 * PI - theta1;
 	}
-			
+	*/		
+	/*
 	abs_theta1 = abs(theta1);
 	theta1 = abs_theta1;// will be only positive value
-	/*
+	*/
+	
 	if(coordinate_z == 0.0 && coordinate_x != 0.0){
-		theta1 = PI / 2;
-	}*/
+		theta1 = 0.0;
+	}
 	
 	/**********theta2*************/
 	if(coordinate_x == 0.0){
@@ -268,13 +274,10 @@ void Inv_Kinemtaics(){
 	}else if(coordinate_z == 0.0){
 		theta2 = atan2(coordinate_x, coordinate_y - l1);
 	}else{
-		tempL = sqrt(coordinate_x * coordinate_x + coordinate_z * coordinate_z);
-		theta2 = atan2(tempL, coordinate_y - l1);
-		if(coordinate_x < 0 && coordinate_z < 0){
-			 
-		}else{
-			theta2 *= -1; 
-		}
+		tempY_l1 = coordinate_y - l1;
+		tempL = sqrt(tempY_l1 * tempY_l1 + coordinate_z * coordinate_z);
+		theta2 = atan2(coordinate_x, tempL);
+		
 	}
 	
 	abs_theta2 = abs(theta2);
