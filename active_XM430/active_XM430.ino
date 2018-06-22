@@ -39,7 +39,7 @@ float abs_theta1 = 0.0;
 float abs_theta2 = 0.0;
 float tempL = 0.0;
 float tempY_l1 = 0.0;
-
+float alpha = 0.0;
 
 
 Dynamixel Dxl(DXL_BUS_SERIAL3);
@@ -92,15 +92,12 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly: 
 	
-	//Kinematics();
-	
+		
 	SerialUSB.print(coordinate_x);
 	SerialUSB.print(", ");
 	SerialUSB.print(coordinate_y);
 	SerialUSB.print(", ");
 	SerialUSB.print(coordinate_z);
-	
-	
 	
 	SerialUSB.print(", theta1 = ");
 	SerialUSB.print(theta1);
@@ -113,6 +110,7 @@ void loop() {
 	
 	T_coordinate();
 	Inv_Kinemtaics();
+	
 	Dxl.writeDword(ID_NUM1, 112, 200);
 	Dxl.writeDword(ID_NUM2, 112, 200);
 	MoveDynamixel();
@@ -165,8 +163,8 @@ void MoveDynamixel(){
 }
 
 void Change_rad2Dynamixel_pos(){
-	dx1_pos = theta1 * R2Dynamixel+2048;
-	dx2_pos = theta2 * R2Dynamixel+2048;
+	dx1_pos = theta1 * R2Dynamixel+2047.5;
+	dx2_pos = theta2 * R2Dynamixel+2047.5;
 	
 }
 
@@ -234,51 +232,22 @@ void Condi_Active_L(){
 }
 
 
-/*
+
 void Kinematics(){
 	
-	coordinate_x = l2 * cos(theta1) * sin(theta2);
+	coordinate_x = -l2 * cos(theta1) * sin(theta2);
 	coordinate_y = l1 + l2 * cos(theta2);
 	coordinate_z = l2 * sin(theta1) * sin(theta2);
 	
-}*/
+}
 
 void Inv_Kinemtaics(){
 	
-	/************theta1**************/
-	theta1 = atan2(coordinate_z, coordinate_x);
-	
-	if(coordinate_x == 0.0 && coordinate_z == 0.0){   //if x,z is 0, assigned 0 for theta1.
-		theta1 = 0.0;
-	}
-	/*
-	if(coordinate_x > 0){  // dividing cases for theta1
-		if(coordinate_z > 0)
-			theta1 = PI - theta1;
-		if(coordinate_z < 0)
-			theta1 = -1 * PI - theta1;
-	}
-	*/		
-	/*
-	abs_theta1 = abs(theta1);
-	theta1 = abs_theta1;// will be only positive value
-	*/
-	
-	if(coordinate_z == 0.0 && coordinate_x != 0.0){
-		theta1 = 0.0;
-	}
-	
 	/**********theta2*************/
-	if(coordinate_x == 0.0){
-		theta2 = atan2(coordinate_z, coordinate_y - l1);
-	}else if(coordinate_z == 0.0){
-		theta2 = atan2(coordinate_x, coordinate_y - l1);
-	}else{
-		tempY_l1 = coordinate_y - l1;
-		tempL = sqrt(tempY_l1 * tempY_l1 + coordinate_z * coordinate_z);
-		theta2 = atan2(coordinate_x, tempL);
-		
-	}
+	tempY_l1 = coordinate_y - l1;
+	tempL = sqrt(coordinate_x * coordinate_x + coordinate_z * coordinate_z);
+	alpha = atan2(tempY_l1, tempL);
+	theta2 = PI / 2 - alpha;
 	
 	abs_theta2 = abs(theta2);
 	if(abs_theta2 >= 1.57){
@@ -286,6 +255,14 @@ void Inv_Kinemtaics(){
 			theta2 = 1.57;
 		if(theta2 < 0)
 			theta2 = -1.57;
+	}
+	
+	
+	/************theta1**************/
+	theta1 = atan2(coordinate_z, coordinate_x);
+	
+	if(coordinate_x == 0.0 && coordinate_z == 0.0){   //if x,z is 0, assigned 0 for theta1.
+		theta1 = 0.0;
 	}
 	
 }
