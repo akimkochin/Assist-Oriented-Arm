@@ -38,25 +38,7 @@ void loop() {
     // Wait for 1 second (1000 milliseconds)
     delay(500);   
  }
-/*
-    breaking_state = digitalRead(breaking);
-    if(breaking_state==HIGH){
-       //Dxl.setPosition(ID[0],0,100);
-       //Dxl.setPosition(ID[1],210,100);
-       //new prototype program
-        Dxl.goalPosition(P_DX1, 1010); 
-        Dxl.goalPosition(P_DX2, 1010);
-       delay(1000); 
-        SerialUSB.println("BREAK_OFF");
-    }
-    if(breaking_state==LOW){
-     Dxl.goalPosition(P_DX1, 1010); 
-     Dxl.goalPosition(P_DX2, 1010); 
-            delay(1000); 
 
-        SerialUSB.println("BREAK_ON");
-    }
-  */
 
 
 }
