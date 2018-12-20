@@ -8,6 +8,11 @@
 #define P_DX1 1
 #define P_DX2 2
 #define breaking 16
+#define Torque 24
+#define ON 1
+#define OFF 0
+#define GOAL_POSITION 30
+
 int breaking_state;
 Dynamixel Dxl(DXL_BUS_SERIAL1);
 void setup() {
@@ -15,48 +20,41 @@ void setup() {
 	Dxl.begin(3);
 	Dxl.jointMode(P_DX1);
 	Dxl.jointMode(P_DX2); //jointMode() is to use position mode
-
+    Dxl.writeByte(P_DX1, Torque, OFF);
+    Dxl.writeByte(P_DX2, Torque, OFF);
+    
+	attachInterrupt(breaking, Brake_ON, FALLING);
+	
+	
+	pinMode(BOARD_LED_PIN, OUTPUT);
     pinMode(breaking, INPUT_PULLDOWN);
 
 }
 
+void Brake_ON(){
+	
+	Dxl.writeWord(P_DX1, GOAL_POSITION, 400); 
+    Dxl.writeWord(P_DX2, GOAL_POSITION, 500);
+	delay(500);
+	
+}
+
+
+
+void Torque_OFF(){
+	Dxl.writeWord(P_DX1, Torque, OFF);
+    Dxl.writeWord(P_DX2, Torque, OFF);
+}
+
 void loop() {
   // put your main code here, to run repeatedly: 
- breaking_state = digitalRead(breaking);
-
-    /*Turn dynamixel ID 2 to position 0*/
- if(breaking_state==HIGH){
-    Dxl.goalPosition(P_DX1, 1000); 
-    Dxl.goalPosition(P_DX2, 1010); 
-    // Wait for 1 second (1000 milliseconds)
-    delay(500); 
- }
- if(breaking_state==LOW){
-    /*Turn dynamixel ID 2 to position 300*/
-    Dxl.goalPosition(P_DX1, 400); 
-    Dxl.goalPosition(P_DX2, 500);
-    // Wait for 1 second (1000 milliseconds)
-    delay(500);   
- }
-/*
-    breaking_state = digitalRead(breaking);
-    if(breaking_state==HIGH){
-       //Dxl.setPosition(ID[0],0,100);
-       //Dxl.setPosition(ID[1],210,100);
-       //new prototype program
-        Dxl.goalPosition(P_DX1, 1010); 
-        Dxl.goalPosition(P_DX2, 1010);
-       delay(1000); 
-        SerialUSB.println("BREAK_OFF");
-    }
-    if(breaking_state==LOW){
-     Dxl.goalPosition(P_DX1, 1010); 
-     Dxl.goalPosition(P_DX2, 1010); 
-            delay(1000); 
-
-        SerialUSB.println("BREAK_ON");
-    }
-  */
+  Torque_OFF();
+  breaking_state = digitalRead(breaking);
+  if(breaking_state==HIGH){
+	Dxl.writeWord(P_DX1, GOAL_POSITION, 1000); 
+    Dxl.writeWord(P_DX2, GOAL_POSITION,1010);
+	delay(500);
+  }
 
 
 }
